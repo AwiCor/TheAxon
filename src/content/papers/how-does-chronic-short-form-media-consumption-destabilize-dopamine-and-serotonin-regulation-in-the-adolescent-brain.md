@@ -13,7 +13,7 @@ author: Jan J. Labuc
 date: 2026-04-13
 featured: true
 draft: true
-pdf: ''
+pdf: /papers/bb5af15f9_article.pdf
 ---
 
 Humans are fundamentally wired for social connection. For thousands of years, we
