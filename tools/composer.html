@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Axon — Composer</title>
+<style>
+  @font-face { font-family:'Fraunces'; font-weight:300 700; font-display:swap; src:url('/fonts/fraunces-latin-wght-normal.woff2') format('woff2-variations'); }
+  @font-face { font-family:'Newsreader'; font-weight:300 600; font-display:swap; src:url('/fonts/newsreader-latin-wght-normal.woff2') format('woff2-variations'); }
+  @font-face { font-family:'Newsreader'; font-style:italic; font-weight:300 600; font-display:swap; src:url('/fonts/newsreader-latin-wght-italic.woff2') format('woff2-variations'); }
+  @font-face { font-family:'Inter'; font-weight:100 900; font-display:swap; src:url('/fonts/inter-latin-wght-normal.woff2') format('woff2-variations'); }
+  @font-face { font-family:'JetBrains Mono'; font-weight:400 600; font-display:swap; src:url('/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations'); }
+
+  :root {
+    --bg:#100e0c; --panel:#17140f; --panel2:#1d1a14; --ink:#ece6da; --muted:#a89e8f; --faint:#7c7365;
+    --border:#2c2820; --blue:#7ea6ff; --amber:#f0a94b; --primary:#a9a2f2; --danger:#e88;
+    --radius:8px;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; }
+  body {
+    background:var(--bg); color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif; font-size:15px; line-height:1.5;
+    display:grid; grid-template-columns:270px 1fr; height:100vh; overflow:hidden;
+  }
+  a { color:var(--primary); }
+  .mono { font-family:'JetBrains Mono',monospace; }
+  .eyebrow { font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.18em; font-size:10px; color:var(--faint); }
+
+  /* Sidebar */
+  .side { background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; min-height:0; }
+  .side__head { padding:18px 18px 12px; border-bottom:1px solid var(--border); }
+  .brand { font-family:'Fraunces',serif; font-size:20px; font-weight:600; }
+  .brand small { display:block; font-family:'Newsreader',serif; font-style:italic; font-size:12px; color:var(--muted); margin-top:2px; }
+  .newbtn {
+    margin:12px 18px; padding:9px 12px; width:calc(100% - 36px);
+    background:transparent; color:var(--primary); border:1px solid #3a3550; border-radius:999px;
+    font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.12em; cursor:pointer;
+  }
+  .newbtn:hover { background:rgba(169,162,242,0.12); }
+  .plist { overflow-y:auto; flex:1; padding:6px 10px 20px; min-height:0; }
+  .pitem { padding:9px 10px; border-radius:6px; cursor:pointer; border:1px solid transparent; }
+  .pitem:hover { background:var(--panel2); }
+  .pitem.active { background:var(--panel2); border-color:var(--border); }
+  .pitem__title { font-family:'Fraunces',serif; font-size:14.5px; line-height:1.25; margin-bottom:3px; }
+  .pitem__meta { font-family:'JetBrains Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--faint); display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .dot { width:6px; height:6px; border-radius:99px; display:inline-block; }
+  .badge { color:#ffcf8a; border:1px solid #4a3d22; border-radius:4px; padding:0 4px; }
+
+  /* Main */
+  .main { display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+  .fields { padding:16px 26px 6px; border-bottom:1px solid var(--border); background:var(--bg); }
+  .titlein {
+    width:100%; background:transparent; border:0; color:var(--ink);
+    font-family:'Fraunces',serif; font-size:30px; font-weight:600; letter-spacing:-0.01em; padding:2px 0;
+  }
+  .titlein:focus { outline:none; }
+  .titlein::placeholder { color:#4a453c; }
+  .metarow { display:flex; flex-wrap:wrap; gap:14px 20px; align-items:center; margin-top:10px; }
+  .field { display:flex; flex-direction:column; gap:4px; }
+  .field > label { font-family:'JetBrains Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:0.14em; color:var(--faint); }
+  select, input[type=date], input.txt {
+    background:var(--panel2); color:var(--ink); border:1px solid var(--border); border-radius:6px;
+    padding:6px 9px; font-family:'Inter',sans-serif; font-size:13px;
+  }
+  select:focus, input:focus { outline:none; border-color:#3a3550; }
+  .check { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--muted); cursor:pointer; user-select:none; }
+  .check input { width:15px; height:15px; accent-color:var(--primary); }
+  .abstract { width:100%; margin-top:12px; background:var(--panel2); color:var(--ink); border:1px solid var(--border); border-radius:6px; padding:9px 11px; font-family:'Newsreader',serif; font-size:14px; line-height:1.5; resize:vertical; min-height:52px; }
+  .abstract:focus { outline:none; border-color:#3a3550; }
+  .abstract::placeholder { color:#4a453c; font-style:italic; }
+
+  /* Toolbar */
+  .toolbar { display:flex; align-items:center; gap:4px; padding:8px 26px; border-bottom:1px solid var(--border); background:var(--panel); flex-wrap:wrap; }
+  .tb { background:transparent; border:1px solid transparent; color:var(--muted); border-radius:6px; height:32px; min-width:32px; padding:0 8px; cursor:pointer; font-size:14px; display:inline-flex; align-items:center; justify-content:center; }
+  .tb:hover { background:var(--panel2); color:var(--ink); }
+  .tb b { font-family:'Fraunces',serif; }
+  .tb i { font-family:'Newsreader',serif; }
+  .tb .lab { font-family:'Fraunces',serif; font-weight:600; font-size:13px; }
+  .tbsep { width:1px; height:20px; background:var(--border); margin:0 4px; }
+
+  /* Editor */
+  .editor-wrap { flex:1; overflow-y:auto; min-height:0; }
+  .editor {
+    max-width:660px; margin:0 auto; padding:34px 26px 120px; min-height:100%;
+    font-family:'Newsreader',serif; font-size:18px; line-height:1.75; color:var(--ink); outline:none;
+  }
+  .editor:empty::before { content:attr(data-placeholder); color:#4a453c; font-style:italic; }
+  .editor p { margin:0 0 1em; }
+  .editor h2 { font-family:'Fraunces',serif; font-weight:600; font-size:1.5em; line-height:1.15; margin:1.4em 0 0.3em; }
+  .editor h3 { font-family:'Fraunces',serif; font-weight:600; font-size:1.2em; margin:1.2em 0 0.3em; }
+  .editor strong { font-weight:600; }
+  .editor em { font-style:italic; }
+  .editor a { color:var(--primary); text-decoration:underline; }
+  .editor blockquote { border-left:2px solid #4a4570; margin:1em 0; padding-left:1em; color:var(--muted); font-style:italic; }
+  .editor ul, .editor ol { padding-left:1.4em; margin:0 0 1em; }
+  .editor li { margin-bottom:0.3em; }
+  .editor code { font-family:'JetBrains Mono',monospace; font-size:0.85em; background:var(--panel2); padding:0.1em 0.35em; border-radius:4px; }
+  .editor hr { border:0; border-top:1px solid var(--border); margin:1.6em 0; }
+
+  /* Footer bar */
+  .bar { display:flex; align-items:center; gap:14px; padding:12px 26px; border-top:1px solid var(--border); background:var(--panel); }
+  .status { flex:1; font-size:12.5px; color:var(--muted); }
+  .status.err { color:#f2a3a3; }
+  .status.ok { color:#9fd6a8; }
+  .btn { border:1px solid #3a3550; background:transparent; color:var(--primary); border-radius:999px; padding:9px 18px; font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.12em; cursor:pointer; }
+  .btn:hover { background:rgba(169,162,242,0.12); }
+  .btn--save { background:var(--primary); color:#14121a; border-color:var(--primary); font-weight:600; }
+  .btn--save:hover { background:#bcb6f5; }
+  .btn--danger { color:#e88; border-color:#5a3030; }
+  .btn--danger:hover { background:rgba(230,136,136,0.12); }
+  .slug { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--faint); }
+</style>
+</head>
+<body>
+  <aside class="side">
+    <div class="side__head">
+      <div class="brand">The Axon<small>Composer</small></div>
+    </div>
+    <button class="newbtn" id="new">＋ New paper</button>
+    <div class="plist" id="plist"></div>
+  </aside>
+
+  <section class="main">
+    <div class="fields">
+      <input class="titlein" id="title" placeholder="Paper title…" autocomplete="off" />
+      <div class="metarow">
+        <div class="field">
+          <label for="section">Section</label>
+          <select id="section"></select>
+        </div>
+        <div class="field">
+          <label for="author">Author</label>
+          <input class="txt" id="author" style="width:160px" value="The Axon" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="date">Date</label>
+          <input type="date" id="date" />
+        </div>
+        <label class="check" style="margin-top:14px"><input type="checkbox" id="featured" /> Featured</label>
+        <label class="check" style="margin-top:14px"><input type="checkbox" id="draft" /> Draft</label>
+      </div>
+      <textarea class="abstract" id="abstract" placeholder="Abstract — one or two sentences, shown on cards and used for previews."></textarea>
+    </div>
+
+    <div class="toolbar" id="toolbar">
+      <button class="tb" data-cmd="bold" title="Bold (⌘B)"><b>B</b></button>
+      <button class="tb" data-cmd="italic" title="Italic (⌘I)"><i>I</i></button>
+      <span class="tbsep"></span>
+      <button class="tb" data-block="H2" title="Heading"><span class="lab">H2</span></button>
+      <button class="tb" data-block="H3" title="Subheading"><span class="lab">H3</span></button>
+      <span class="tbsep"></span>
+      <button class="tb" data-cmd="insertUnorderedList" title="Bulleted list">•—</button>
+      <button class="tb" data-cmd="insertOrderedList" title="Numbered list">1.</button>
+      <button class="tb" data-block="BLOCKQUOTE" title="Quote">❝</button>
+      <span class="tbsep"></span>
+      <button class="tb" data-link="1" title="Link (⌘K)">🔗</button>
+      <button class="tb" data-cmd="insertHorizontalRule" title="Divider">―</button>
+    </div>
+
+    <div class="editor-wrap">
+      <div class="editor" id="editor" contenteditable="true"
+           data-placeholder="Write the paper here. Select text and use the toolbar (or ⌘B / ⌘I) to format. Press Enter for a new paragraph."></div>
+    </div>
+
+    <div class="bar">
+      <span class="slug" id="slug"></span>
+      <span class="status" id="status"></span>
+      <button class="btn btn--danger" id="delete" style="display:none">Delete</button>
+      <button class="btn btn--save" id="save">Save to site ⌘S</button>
+    </div>
+  </section>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const editor = $('editor');
+let SECTIONS = ['neurology','endocrinology'];
+let currentSlug = null;   // slug of the paper being edited (null = new)
+let currentPdf = '';      // preserve an existing pdf: field when editing
+
+document.execCommand('defaultParagraphSeparator', false, 'p');
+
+/* ---------- Markdown <-> HTML (a small, matched subset) ---------- */
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function inlineToMd(node){
+  let out='';
+  node.childNodes.forEach(n=>{
+    if(n.nodeType===3){ out+=n.nodeValue; return; }
+    if(n.nodeType!==1) return;
+    const t=n.nodeName;
+    if(t==='BR'){ out+='\n'; return; }
+    const inner=inlineToMd(n);
+    if(t==='STRONG'||t==='B') out+= inner.trim()? '**'+inner+'**':inner;
+    else if(t==='EM'||t==='I') out+= inner.trim()? '*'+inner+'*':inner;
+    else if(t==='CODE') out+='`'+n.textContent+'`';
+    else if(t==='A') out+='['+inner+']('+(n.getAttribute('href')||'')+')';
+    else out+=inner;
+  });
+  return out;
+}
+function blockToMd(node){
+  if(node.nodeType===3){ const t=node.nodeValue.trim(); return t? t+'\n\n':''; }
+  if(node.nodeType!==1) return '';
+  const tag=node.nodeName;
+  if(tag==='H1'||tag==='H2') return '## '+inlineToMd(node).trim()+'\n\n';
+  if(tag==='H3'||tag==='H4'||tag==='H5') return '### '+inlineToMd(node).trim()+'\n\n';
+  if(tag==='UL') return [...node.children].map(li=>'- '+inlineToMd(li).trim()).join('\n')+'\n\n';
+  if(tag==='OL') return [...node.children].map((li,i)=>(i+1)+'. '+inlineToMd(li).trim()).join('\n')+'\n\n';
+  if(tag==='BLOCKQUOTE'){
+    const parts=[]; node.childNodes.forEach(c=>{ const s=(c.nodeType===3?c.nodeValue:inlineToMd(c)).trim(); if(s) parts.push(s); });
+    return '> '+parts.join(' ')+'\n\n';
+  }
+  if(tag==='HR') return '---\n\n';
+  if(tag==='PRE') return '```\n'+node.textContent.replace(/\n+$/,'')+'\n```\n\n';
+  const t=inlineToMd(node).trim();
+  return t? t+'\n\n':'';
+}
+function htmlToMd(root){
+  let md=''; root.childNodes.forEach(n=> md+=blockToMd(n));
+  return md.replace(/\n{3,}/g,'\n\n').trim();
+}
+function mdInline(s){
+  s=esc(s);
+  s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/(^|[^*])\*([^*\s][^*]*?)\*/g,'$1<em>$2</em>');
+  s=s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>');
+  return s;
+}
+function mdToHtml(md){
+  const lines=String(md||'').replace(/\r/g,'').split('\n'); const out=[]; let i=0;
+  while(i<lines.length){
+    const line=lines[i];
+    if(!line.trim()){ i++; continue; }
+    if(/^### /.test(line)){ out.push('<h3>'+mdInline(line.slice(4))+'</h3>'); i++; continue; }
+    if(/^#{1,2} /.test(line)){ out.push('<h2>'+mdInline(line.replace(/^#{1,2} /,''))+'</h2>'); i++; continue; }
+    if(/^\s*---+\s*$/.test(line)){ out.push('<hr>'); i++; continue; }
+    if(/^>\s?/.test(line)){ const b=[]; while(i<lines.length&&/^>\s?/.test(lines[i])){ b.push(lines[i].replace(/^>\s?/,'')); i++; } out.push('<blockquote>'+mdInline(b.join(' '))+'</blockquote>'); continue; }
+    if(/^[-*]\s+/.test(line)){ const b=[]; while(i<lines.length&&/^[-*]\s+/.test(lines[i])){ b.push('<li>'+mdInline(lines[i].replace(/^[-*]\s+/,''))+'</li>'); i++; } out.push('<ul>'+b.join('')+'</ul>'); continue; }
+    if(/^\d+\.\s+/.test(line)){ const b=[]; while(i<lines.length&&/^\d+\.\s+/.test(lines[i])){ b.push('<li>'+mdInline(lines[i].replace(/^\d+\.\s+/,''))+'</li>'); i++; } out.push('<ol>'+b.join('')+'</ol>'); continue; }
+    const b=[]; while(i<lines.length&&lines[i].trim()&&!/^(#{1,3}\s|>|[-*]\s|\d+\.\s|\s*---+\s*$)/.test(lines[i])){ b.push(lines[i]); i++; }
+    out.push('<p>'+mdInline(b.join(' '))+'</p>');
+  }
+  return out.join('\n');
+}
+
+/* ---------- slug ---------- */
+function slugify(s){ return String(s||'').toLowerCase().replace(/['’"]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+function updateSlug(){ const s=currentSlug||slugify($('title').value); $('slug').textContent = s? s+'.md' : ''; }
+
+/* ---------- toolbar ---------- */
+function exec(cmd,val){ document.execCommand(cmd,false,val||null); editor.focus(); }
+$('toolbar').addEventListener('click',(e)=>{
+  const btn=e.target.closest('button'); if(!btn) return;
+  if(btn.dataset.cmd) exec(btn.dataset.cmd);
+  else if(btn.dataset.block){
+    const tag=btn.dataset.block;
+    const cur=document.queryCommandValue('formatBlock');
+    exec('formatBlock', (cur && cur.toUpperCase()===tag)? 'P' : tag);
+  } else if(btn.dataset.link){
+    const url=prompt('Link URL:','https://'); if(url) exec('createLink',url);
+  }
+});
+editor.addEventListener('keydown',(e)=>{
+  if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); const u=prompt('Link URL:','https://'); if(u) exec('createLink',u); }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); save(); }
+});
+$('title').addEventListener('input',updateSlug);
+document.addEventListener('keydown',(e)=>{ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); save(); } });
+
+/* ---------- data ---------- */
+async function boot(){
+  try{
+    const cfg=await (await fetch('/api/config')).json();
+    SECTIONS=cfg.sections||SECTIONS;
+    $('section').innerHTML=SECTIONS.map(s=>`<option value="${s}">${s[0].toUpperCase()+s.slice(1)}</option>`).join('');
+    $('date').value=cfg.today;
+  }catch{}
+  await refreshList();
+  newPaper();
+}
+async function refreshList(){
+  let papers=[];
+  try{ papers=(await (await fetch('/api/papers')).json()).papers||[]; }catch{}
+  const hue={neurology:'#7ea6ff',endocrinology:'#f0a94b'};
+  $('plist').innerHTML=papers.map(p=>`
+    <div class="pitem${p.slug===currentSlug?' active':''}" data-slug="${p.slug}">
+      <div class="pitem__title">${escapeHtml(p.title)}</div>
+      <div class="pitem__meta">
+        <span class="dot" style="background:${hue[p.section]||'#888'}"></span>${p.section||'—'}
+        <span>·</span>${p.date||''}
+        ${p.draft?'<span class="badge">draft</span>':''}
+        ${p.pdf?'<span class="badge" style="color:#8ab6ff;border-color:#26406a">pdf</span>':''}
+      </div>
+    </div>`).join('') || '<div style="padding:12px;color:#6a6156;font-size:12px">No papers yet.</div>';
+  $('plist').querySelectorAll('.pitem').forEach(el=> el.addEventListener('click',()=>loadPaper(el.dataset.slug)));
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function newPaper(){
+  currentSlug=null; currentPdf='';
+  $('title').value=''; $('abstract').value=''; $('author').value='The Axon';
+  $('section').value=SECTIONS[0]; $('featured').checked=false; $('draft').checked=true;
+  editor.innerHTML='';
+  $('delete').style.display='none';
+  setStatus('New paper — starts as a draft. Write, then Save to site.','');
+  updateSlug(); refreshActive(); $('title').focus();
+}
+async function loadPaper(slug){
+  try{
+    const d=await (await fetch('/api/paper?slug='+encodeURIComponent(slug))).json();
+    if(d.error) return setStatus(d.error,'err');
+    currentSlug=slug; currentPdf=d.pdf||'';
+    $('title').value=d.title||''; $('abstract').value=d.abstract||''; $('author').value=d.author||'The Axon';
+    $('section').value=SECTIONS.includes(d.section)?d.section:SECTIONS[0];
+    $('featured').checked=!!d.featured; $('draft').checked=!!d.draft;
+    $('date').value=/^\d{4}-\d{2}-\d{2}$/.test(d.date)?d.date:$('date').value;
+    editor.innerHTML=mdToHtml(d.body)|| '';
+    $('delete').style.display='';
+    setStatus('Editing “'+(d.title||slug)+'”.'+(currentPdf?' (has a PDF attached)':''),'');
+    updateSlug(); refreshActive();
+  }catch(e){ setStatus('Could not load paper.','err'); }
+}
+function refreshActive(){ $('plist').querySelectorAll('.pitem').forEach(el=> el.classList.toggle('active', el.dataset.slug===currentSlug)); }
+
+function setStatus(msg,kind){ const s=$('status'); s.textContent=msg; s.className='status'+(kind?' '+kind:''); }
+
+async function save(){
+  const title=$('title').value.trim();
+  if(!title) return setStatus('Give the paper a title first.','err');
+  const payload={
+    slug: currentSlug || slugify(title),
+    title, section:$('section').value,
+    abstract:$('abstract').value.trim(),
+    author:$('author').value.trim()||'The Axon',
+    date:$('date').value,
+    featured:$('featured').checked, draft:$('draft').checked,
+    body: htmlToMd(editor),
+    pdf: currentPdf || undefined,
+  };
+  setStatus('Saving…','');
+  try{
+    const r=await (await fetch('/api/save',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)})).json();
+    if(r.error) return setStatus(r.error,'err');
+    currentSlug=r.slug;
+    setStatus('Saved to '+r.path+' — refresh your dev server to see it live.','ok');
+    $('delete').style.display=''; updateSlug(); await refreshList(); refreshActive();
+  }catch(e){ setStatus('Save failed — is the composer server running?','err'); }
+}
+$('save').addEventListener('click',save);
+$('new').addEventListener('click',newPaper);
+$('delete').addEventListener('click',async ()=>{
+  if(!currentSlug) return;
+  if(!confirm('Delete “'+($('title').value||currentSlug)+'” permanently?')) return;
+  try{
+    await fetch('/api/delete',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({slug:currentSlug})});
+    setStatus('Deleted.','ok'); await refreshList(); newPaper();
+  }catch{ setStatus('Delete failed.','err'); }
+});
+
+boot();
+</script>
+</body>
+</html>

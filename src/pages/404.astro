@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AxonRule from '../components/AxonRule.astro';
+---
+
+<BaseLayout title="Off the map" description="Page not found.">
+  <section class="notfound container container--reading">
+    <p class="eyebrow">Error · 404</p>
+    <h1 class="notfound__title">Off the map</h1>
+    <AxonRule class="notfound__rule" />
+    <p class="notfound__text">
+      There is no entry at this address. The page may have been moved, renamed,
+      or never existed in this archive.
+    </p>
+    <a class="button" href="/">← Return to the index</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .notfound { padding-block: clamp(4rem, 2rem + 10vw, 9rem); text-align: center; }
+  .notfound .eyebrow { display: block; }
+  .notfound__title { font-family: var(--font-display); font-size: var(--fs-display); margin-top: var(--space-3); }
+  .notfound__rule { margin: var(--space-6) auto; max-width: 20rem; }
+  .notfound__text { font-family: var(--font-serif); font-size: var(--fs-lead); color: hsl(var(--muted-foreground)); max-width: 34rem; margin: 0 auto var(--space-6); line-height: 1.5; }
+</style>

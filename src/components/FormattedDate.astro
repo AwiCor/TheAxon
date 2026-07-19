@@ -1,0 +1,20 @@
+---
+interface Props {
+  date: Date;
+  /** 'long' → "12 March 2025"; 'short' → "12 Mar 2025"; 'month' → "March 2025" */
+  variant?: 'long' | 'short' | 'month';
+}
+const { date, variant = 'long' } = Astro.props;
+
+const opts: Intl.DateTimeFormatOptions =
+  variant === 'month'
+    ? { month: 'long', year: 'numeric' }
+    : variant === 'short'
+      ? { day: 'numeric', month: 'short', year: 'numeric' }
+      : { day: 'numeric', month: 'long', year: 'numeric' };
+
+const label = new Intl.DateTimeFormat('en-GB', opts).format(date);
+const iso = date.toISOString().slice(0, 10);
+---
+
+<time datetime={iso}>{label}</time>

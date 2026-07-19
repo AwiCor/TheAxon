@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AxonRule from '../components/AxonRule.astro';
+import { SECTIONS, SECTION_IDS } from '../lib/sections';
+---
+
+<BaseLayout
+  title="About"
+  description="About The Axon — a personal research archive in neurology and endocrinology."
+>
+  <article class="about container container--reading">
+    <header class="about__head">
+      <p class="eyebrow">About the archive</p>
+      <h1 class="about__title">The Axon</h1>
+      <p class="about__lede">
+        A personal archive of long-form research at the intersection of
+        neuroscience and endocrinology — rigorous ideas, written with care.
+      </p>
+    </header>
+
+    <AxonRule class="about__rule" />
+
+    <div class="prose about__prose">
+      <h2>The intent</h2>
+      <p>
+        The Axon exists to close the gap between rigorous scientific inquiry and
+        clear, unhurried writing. The deepest ideas in biology deserve to be
+        communicated with the same precision and care with which they were
+        discovered.
+      </p>
+      <p>
+        Each paper is written to stand on its own — no prior knowledge assumed,
+        no jargon left unexplained. The aim is to map the architecture of complex
+        systems so a careful reader can find their footing in unfamiliar terrain.
+      </p>
+
+      <h2>The taxonomy</h2>
+      <p>Two fields, each a distinct signalling system of the body:</p>
+      <ul>
+        {SECTION_IDS.map((id) => (
+          <li>
+            <a href={`/${id}`}><strong>{SECTIONS[id].title}</strong></a> —
+            {' '}{SECTIONS[id].description.toLowerCase()}.
+          </li>
+        ))}
+      </ul>
+
+      <h2>The name</h2>
+      <blockquote>
+        An axon is the output fibre of a neuron — it carries the signal outward.
+        That is what this archive does.
+      </blockquote>
+      <p>
+        Knowledge is not meant to be hoarded behind paywalls or diluted into
+        listicles. The Axon is a return to long-form thinking — papers that
+        reward patience, and reward re-reading.
+      </p>
+    </div>
+
+    <p class="about__back"><a class="textlink" href="/">← Return to the index</a></p>
+  </article>
+</BaseLayout>
+
+<style>
+  .about { padding-block: clamp(2.5rem, 1.5rem + 5vw, 5rem) var(--space-7); }
+  .about__title { font-size: var(--fs-h1); margin-top: var(--space-3); }
+  .about__lede { font-family: var(--font-serif); font-size: var(--fs-lead); color: hsl(var(--muted-foreground)); max-width: var(--measure); margin-top: var(--space-4); line-height: 1.5; }
+  .about__rule { margin-block: var(--space-6) var(--space-7); }
+  .about__prose h2:first-child { margin-top: 0; }
+  /* No drop cap on the About prose */
+  .about__prose > p:first-of-type::first-letter { all: unset; }
+  .about__back { margin-top: var(--space-7); }
+</style>

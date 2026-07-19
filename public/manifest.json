@@ -1,0 +1,12 @@
+{
+  "name": "The Axon",
+  "short_name": "The Axon",
+  "description": "A personal research archive in neurology and endocrinology.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#100e0c",
+  "theme_color": "#100e0c",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -1,0 +1,31 @@
+---
+/**
+ * A section divider drawn from the axon motif:
+ * hairline — soma dot — fibre — open synaptic terminal — hairline.
+ * Decorative; hidden from assistive tech.
+ */
+interface Props { class?: string }
+const { class: className } = Astro.props;
+---
+
+<div class:list={['axon-rule', className]} role="separator" aria-hidden="true">
+  <span class="axon-rule__line"></span>
+  <svg width="58" height="10" viewBox="0 0 58 10" fill="none" focusable="false">
+    <line x1="2" y1="5" x2="20" y2="5" stroke="currentColor" stroke-width="1" />
+    <circle cx="24" cy="5" r="3" fill="currentColor" />
+    <line x1="28" y1="5" x2="46" y2="5" stroke="currentColor" stroke-width="1" />
+    <circle cx="50" cy="5" r="1.6" fill="none" stroke="currentColor" stroke-width="1" />
+  </svg>
+  <span class="axon-rule__line"></span>
+</div>
+
+<style>
+  .axon-rule {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: hsl(var(--border));
+  }
+  .axon-rule__line { height: 1px; flex: 1; background: currentColor; }
+  .axon-rule svg { flex-shrink: 0; overflow: visible; }
+</style>

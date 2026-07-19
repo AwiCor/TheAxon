@@ -1,0 +1,68 @@
+# The Axon — editor configuration (Sveltia CMS / Decap-compatible).
+#
+# Before this works on your live domain you must set `repo` and `base_url`
+# below and do the one-time GitHub OAuth setup — see ADMIN.md.
+
+backend:
+  name: github
+  repo: YOUR_GITHUB_USERNAME/theaxon   # ← change to your repo, e.g. janlabuc/theaxon
+  branch: main
+  # URL of your OAuth relay worker (see ADMIN.md). Only needed for the live site.
+  base_url: https://YOUR-AUTH-WORKER.example.workers.dev
+
+# Lets you run the editor locally with no login: `npm run cms:local`, then open
+# http://localhost:4323/admin/. Ignored on the live domain.
+local_backend: true
+
+# New/changed papers are committed straight to `branch` above.
+publish_mode: simple
+
+# Where uploaded PDFs (and any images) are stored, and how they're referenced.
+media_folder: public/papers
+public_folder: /papers
+
+collections:
+  - name: papers
+    label: Papers
+    label_singular: Paper
+    description: Your research papers. New ones start as drafts.
+    folder: src/content/papers
+    create: true
+    delete: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{title}}  ·  {{section}}  ·  {{date}}'
+    sortable_fields: [date, title, section]
+    editor:
+      preview: false
+    fields:
+      - { name: title, label: Title, widget: string }
+      - name: section
+        label: Section
+        widget: select
+        options:
+          - { label: Neurology, value: neurology }
+          - { label: Endocrinology, value: endocrinology }
+      - name: abstract
+        label: Abstract
+        widget: text
+        hint: One or two sentences. Shown on cards and used for search/social previews.
+      - { name: author, label: Author, widget: string, default: The Axon }
+      - name: date
+        label: Date
+        widget: datetime
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+        picker_utc: true
+      - { name: featured, label: Feature on the home page, widget: boolean, default: false }
+      - { name: draft, label: Draft (hidden from the live site until unticked), widget: boolean, default: true }
+      - name: pdf
+        label: PDF (optional)
+        widget: file
+        required: false
+        hint: Upload a PDF to publish this as a downloadable/embedded PDF paper. Leave empty for a written article.
+      - name: body
+        label: Article
+        widget: markdown
+        hint: Write here. Toolbar buttons handle bold, italics, headings, lists, quotes and links.

@@ -1,0 +1,57 @@
+---
+import AxonRule from './AxonRule.astro';
+import PaperCard from './PaperCard.astro';
+import { getPapersBySection } from '../lib/papers';
+import { SECTIONS, type SectionId } from '../lib/sections';
+
+interface Props { section: SectionId }
+const { section } = Astro.props;
+const meta = SECTIONS[section];
+const papers = await getPapersBySection(section);
+const count = papers.length;
+---
+
+<section class="section-head" style={`--cat: var(--${meta.color})`}>
+  <div class="container">
+    <a class="textlink section-head__back" href="/">← Index</a>
+    <p class="section-head__eyebrow">
+      <span class="section-head__dot" aria-hidden="true"></span>
+      Section · {count === 1 ? '1 paper' : `${count} papers`}
+    </p>
+    <h1 class="section-head__title">{meta.title}</h1>
+    <p class="section-head__intro">{meta.intro}</p>
+    <AxonRule class="section-head__rule" />
+  </div>
+</section>
+
+<div class="container section-body">
+  {count === 0 ? (
+    <p class="empty">No papers in {meta.title} yet.</p>
+  ) : (
+    <div class="card-grid">
+      {papers.map((p) => <PaperCard paper={p} />)}
+    </div>
+  )}
+</div>
+
+<style>
+  .section-head { padding: clamp(2.5rem, 1.5rem + 5vw, 5rem) 0 var(--space-5); }
+  .section-head__back { margin-bottom: var(--space-6); }
+  .section-head__eyebrow {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-family: var(--font-mono); font-size: var(--fs-eyebrow);
+    text-transform: uppercase; letter-spacing: 0.2em; color: hsl(var(--cat));
+  }
+  .section-head__dot { width: 0.45rem; height: 0.45rem; border-radius: 9999px; background: hsl(var(--cat)); }
+  .section-head__title { font-size: var(--fs-h1); margin-top: var(--space-3); }
+  .section-head__intro { font-family: var(--font-serif); font-size: var(--fs-lead); color: hsl(var(--muted-foreground)); max-width: var(--measure); margin-top: var(--space-4); line-height: 1.5; }
+  .section-head__rule { margin-top: var(--space-6); }
+
+  .section-body { padding-bottom: var(--space-7); }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr));
+    gap: var(--space-6) var(--space-5);
+  }
+  .empty { font-family: var(--font-serif); font-style: italic; color: hsl(var(--muted-foreground)); padding: var(--space-7) 0; }
+</style>

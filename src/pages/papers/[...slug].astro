@@ -1,0 +1,130 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TestTubeProgress from '../../components/TestTubeProgress.astro';
+import EndMark from '../../components/EndMark.astro';
+import PaperCard from '../../components/PaperCard.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import { getPapers, getPapersBySection, readingTime, type Paper } from '../../lib/papers';
+import { SECTIONS } from '../../lib/sections';
+
+export const getStaticPaths = (async () => {
+  const papers = await getPapers();
+  return papers.map((paper) => ({ params: { slug: paper.id }, props: { paper } }));
+}) satisfies GetStaticPaths;
+
+interface Props { paper: Paper }
+const { paper } = Astro.props;
+const { title, abstract, author, date, section, pdf } = paper.data;
+const s = SECTIONS[section];
+
+const { Content } = await render(paper);
+const hasBody = (paper.body ?? '').trim().length > 0;
+const minutes = readingTime(paper.body);
+
+const siblings = (await getPapersBySection(section)).filter((p) => p.id !== paper.id).slice(0, 3);
+---
+
+<BaseLayout title={title} description={abstract} ogType="article">
+  <TestTubeProgress />
+
+  <article class="paper" style={`--cat: var(--${s.color})`}>
+    <div class="container container--reading">
+      <nav class="paper__nav" aria-label="Breadcrumb">
+        <a class="textlink" href={`/${section}`}>← {s.title}</a>
+      </nav>
+
+      <header class="paper__header">
+        <div class="paper__dateline">
+          <span class="paper__cat">{s.title}</span>
+          <span class="paper__hair" aria-hidden="true"></span>
+          <span class="paper__date"><FormattedDate date={date} /></span>
+        </div>
+
+        <h1 class="paper__title">{title}</h1>
+        <p class="paper__excerpt">{abstract}</p>
+
+        <div class="paper__byline">
+          <span class="paper__author">{author}</span>
+          {hasBody && <><span class="paper__bdot" aria-hidden="true"></span><span>{minutes} min read</span></>}
+        </div>
+      </header>
+    </div>
+
+    {hasBody && (
+      <div class="container container--reading">
+        <div class="prose dropcap paper__body"><Content /></div>
+      </div>
+    )}
+
+    {pdf && (
+      <div class="container paper__pdf">
+        <iframe class="paper__pdf-frame" src={`${pdf}#view=FitH`} title={`${title} (PDF)`} loading="lazy"></iframe>
+        <p class="paper__pdf-fallback meta">Can’t see the paper? <a href={pdf} download>Download the PDF</a>.</p>
+      </div>
+    )}
+
+    <div class="container container--reading">
+      <EndMark />
+      {pdf && (
+        <p class="paper__download"><a class="button" href={pdf} download>↓ Download PDF</a></p>
+      )}
+      <nav class="paper__foot" aria-label="Section navigation">
+        <a class="textlink" href={`/${section}`}>← More in {s.title}</a>
+        <a class="textlink" href="/">Index →</a>
+      </nav>
+    </div>
+  </article>
+
+  {siblings.length > 0 && (
+    <section class="container related" aria-labelledby="related-heading">
+      <h2 class="related__title" id="related-heading">More in {s.title}</h2>
+      <div class="card-grid">
+        {siblings.map((p) => <PaperCard paper={p} headingLevel={3} />)}
+      </div>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .paper__nav { padding-top: clamp(2.25rem, 1.5rem + 4vw, 3.5rem); }
+  .paper__header { padding-top: var(--space-5); padding-bottom: var(--space-6); }
+  .paper__dateline { display: flex; align-items: center; gap: 0.75rem; margin-bottom: var(--space-6); }
+  .paper__cat { font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.22em; color: hsl(var(--cat)); }
+  .paper__hair { width: 2rem; height: 1px; background: hsl(var(--border)); }
+  .paper__date { font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.16em; color: hsl(var(--muted-foreground)); }
+  .paper__title { font-size: var(--fs-h1); line-height: 1.06; letter-spacing: -0.015em; margin-bottom: var(--space-5); }
+  .paper__excerpt { font-family: var(--font-serif); font-size: var(--fs-lead); line-height: 1.5; color: hsl(var(--muted-foreground)); }
+  .paper__byline {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-top: var(--space-6); padding-top: var(--space-5);
+    border-top: 1px solid hsl(var(--border));
+    font-family: var(--font-mono); font-size: 0.78rem; color: hsl(var(--muted-foreground));
+  }
+  .paper__author { color: hsl(var(--foreground) / 0.85); }
+  .paper__bdot { width: 3px; height: 3px; border-radius: 9999px; background: hsl(var(--muted-foreground) / 0.4); }
+
+  .paper__body { margin-top: var(--space-6); }
+
+  .paper__pdf { margin-top: var(--space-6); }
+  .paper__pdf-frame {
+    display: block; width: 100%; height: min(85vh, 900px);
+    border: 1px solid hsl(var(--border)); border-radius: var(--radius); background: hsl(var(--muted));
+  }
+  .paper__pdf-fallback { margin-top: var(--space-3); text-align: center; }
+
+  .paper__download { text-align: center; margin-bottom: var(--space-6); }
+  .paper__foot {
+    display: flex; justify-content: space-between; gap: var(--space-4);
+    padding-top: var(--space-5); border-top: 1px solid hsl(var(--border));
+  }
+
+  .related { margin-top: var(--space-9); }
+  .related__title { font-size: var(--fs-h3); margin-bottom: var(--space-6); }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr));
+    gap: var(--space-6) var(--space-5);
+  }
+</style>

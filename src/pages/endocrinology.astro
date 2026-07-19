@@ -1,0 +1,9 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionView from '../components/SectionView.astro';
+import { SECTIONS } from '../lib/sections';
+---
+
+<BaseLayout title={SECTIONS.endocrinology.title} description={SECTIONS.endocrinology.intro}>
+  <SectionView section="endocrinology" />
+</BaseLayout>

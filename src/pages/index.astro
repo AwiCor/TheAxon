@@ -1,0 +1,171 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AxonField from '../components/AxonField.astro';
+import AxonRule from '../components/AxonRule.astro';
+import PaperCard from '../components/PaperCard.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import { getPapers, readingTime } from '../lib/papers';
+import { SECTION_IDS, SECTIONS } from '../lib/sections';
+import { SITE_TAGLINE } from '../lib/site';
+
+const papers = await getPapers();
+const counts = Object.fromEntries(
+  SECTION_IDS.map((id) => [id, papers.filter((p) => p.data.section === id).length]),
+);
+
+const featured = papers.find((p) => p.data.featured) ?? papers[0] ?? null;
+const grid = featured ? papers.filter((p) => p.id !== featured.id) : papers;
+const latestDate = papers[0]?.data.date;
+
+const leadSection = featured ? SECTIONS[featured.data.section] : null;
+const leadMinutes = featured ? readingTime(featured.body) : 0;
+---
+
+<BaseLayout>
+  <!-- Masthead -->
+  <header class="masthead">
+    <div class="masthead__field" aria-hidden="true"><AxonField /></div>
+    <div class="masthead__inner">
+      <p class="eyebrow masthead__eyebrow">An archive of long-form inquiry</p>
+      <h1 class="masthead__title">The Axon</h1>
+      <p class="masthead__tagline">{SITE_TAGLINE}</p>
+      <div class="masthead__rulewrap">
+        <AxonRule />
+        <p class="masthead__count">
+          {papers.length} {papers.length === 1 ? 'Entry' : 'Entries'}
+          {latestDate && <> · Updated <FormattedDate date={latestDate} variant="month" /></>}
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Section bar -->
+    <nav class="filter-bar" aria-label="Sections">
+      <span class="filter filter--active">All <span class="filter__count">{papers.length}</span></span>
+      {SECTION_IDS.map((id) => (
+        <a class="filter" href={`/${id}`} style={`--cat: var(--${SECTIONS[id].color})`}>
+          <span class="filter__dot" aria-hidden="true"></span>
+          {SECTIONS[id].title}
+          <span class="filter__count">{counts[id]}</span>
+        </a>
+      ))}
+    </nav>
+
+    {papers.length === 0 && (
+      <p class="empty">The archive awaits its first paper.</p>
+    )}
+
+    <!-- Featured lead -->
+    {featured && leadSection && (
+      <section class="lead" aria-labelledby="lead-heading">
+        <a class="lead__link" href={`/papers/${featured.id}/`} style={`--cat: var(--${leadSection.color})`}>
+          <div class="lead__panel">
+            <span class="lead__initial" aria-hidden="true">{leadSection.title[0]}</span>
+          </div>
+          <div class="lead__text">
+            <div class="lead__eyebrows">
+              <span class="lead__cat">{leadSection.title}</span>
+              <span class="lead__hair" aria-hidden="true"></span>
+              <span class="eyebrow">Featured</span>
+            </div>
+            <h2 class="lead__title" id="lead-heading">{featured.data.title}</h2>
+            <p class="lead__excerpt">{featured.data.abstract}</p>
+            <p class="lead__meta">
+              {featured.data.author} · <FormattedDate date={featured.data.date} />
+              {featured.body.trim() && ` · ${leadMinutes} min read`}
+            </p>
+            <span class="button lead__cta">Read the paper →</span>
+          </div>
+        </a>
+      </section>
+    )}
+
+    <!-- Latest -->
+    {grid.length > 0 && (
+      <section class="grid-section" aria-labelledby="latest-heading">
+        <p class="eyebrow" id="latest-heading">Latest</p>
+        <div class="card-grid">
+          {grid.map((p) => <PaperCard paper={p} headingLevel={3} />)}
+        </div>
+      </section>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  /* Masthead */
+  .masthead { position: relative; overflow: hidden; }
+  .masthead__field {
+    position: absolute; inset: 0; z-index: 0;
+    pointer-events: none; opacity: 0.9;
+  }
+  .masthead__inner {
+    position: relative; z-index: 1;
+    max-width: var(--page-max); margin-inline: auto;
+    padding: clamp(3.5rem, 2rem + 7vw, 7rem) var(--gutter) var(--space-7);
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+  }
+  .masthead__eyebrow { margin-bottom: var(--space-5); }
+  .masthead__title { font-family: var(--font-display); font-size: var(--fs-display); font-weight: 600; line-height: 0.9; letter-spacing: -0.02em; }
+  .masthead__tagline { font-family: var(--font-serif); font-style: italic; font-size: var(--fs-lead); color: hsl(var(--muted-foreground)); margin-top: var(--space-4); }
+  .masthead__rulewrap { width: min(48rem, 100%); margin-top: var(--space-7); }
+  .masthead__count {
+    margin-top: var(--space-4); text-align: center;
+    font-family: var(--font-mono); font-size: var(--fs-eyebrow);
+    text-transform: uppercase; letter-spacing: 0.24em; color: hsl(var(--muted-foreground));
+  }
+
+  /* Section bar */
+  .filter-bar {
+    display: flex; flex-wrap: wrap; gap: 0.25rem;
+    padding: var(--space-5) 0; border-bottom: 1px solid hsl(var(--border));
+  }
+  .filter {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 0.85rem; border-radius: 9999px;
+    font-family: var(--font-sans); font-size: 0.82rem;
+    color: hsl(var(--muted-foreground));
+  }
+  .filter:hover { color: hsl(var(--foreground)); }
+  .filter--active { color: hsl(var(--foreground)); }
+  .filter__dot { width: 0.4rem; height: 0.4rem; border-radius: 9999px; background: hsl(var(--cat)); opacity: 0.5; }
+  .filter:hover .filter__dot { opacity: 1; }
+  .filter__count { font-family: var(--font-mono); font-size: 0.62rem; color: hsl(var(--muted-foreground) / 0.7); }
+
+  .empty { font-family: var(--font-display); font-size: var(--fs-h3); color: hsl(var(--muted-foreground)); text-align: center; padding: var(--space-9) 0; }
+
+  /* Lead */
+  .lead { padding: var(--space-7) 0; border-bottom: 1px solid hsl(var(--border)); }
+  .lead__link { display: grid; grid-template-columns: 1fr; gap: var(--space-6); color: inherit; }
+  @media (min-width: 60rem) { .lead__link { grid-template-columns: 5fr 6fr; gap: var(--space-8); align-items: center; } }
+  .lead__panel {
+    position: relative; aspect-ratio: 5 / 4; border-radius: var(--radius); overflow: hidden;
+    background: radial-gradient(130% 130% at 18% 12%, hsl(var(--cat) / 0.18), transparent 62%), hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lead__initial {
+    font-family: var(--font-display); font-weight: 600; font-size: clamp(6rem, 16vw, 11rem);
+    color: hsl(var(--cat)); opacity: 0.2; line-height: 1;
+    transition: transform 1s cubic-bezier(0.22,0.61,0.36,1);
+  }
+  .lead__link:hover .lead__initial { transform: scale(1.04); }
+  .lead__eyebrows { display: flex; align-items: center; gap: 0.75rem; margin-bottom: var(--space-4); }
+  .lead__cat { font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; color: hsl(var(--cat)); }
+  .lead__hair { width: 2.5rem; height: 1px; background: hsl(var(--border)); }
+  .lead__title { font-size: clamp(1.9rem, 1.2rem + 3vw, 3.2rem); line-height: 1.05; letter-spacing: -0.015em; margin-bottom: var(--space-4); transition: color 0.2s ease; }
+  .lead__link:hover .lead__title { color: hsl(var(--primary)); }
+  .lead__excerpt { font-family: var(--font-serif); font-size: var(--fs-lead); line-height: 1.5; color: hsl(var(--muted-foreground)); max-width: 34rem; }
+  .lead__meta { font-family: var(--font-mono); font-size: 0.78rem; color: hsl(var(--muted-foreground)); margin-top: var(--space-5); }
+  .lead__cta { margin-top: var(--space-5); }
+
+  /* Grid */
+  .grid-section { padding: var(--space-7) 0; }
+  .grid-section .eyebrow { margin-bottom: var(--space-6); display: block; }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr));
+    gap: var(--space-6) var(--space-5);
+  }
+</style>

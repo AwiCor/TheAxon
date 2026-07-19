@@ -1,0 +1,17 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Axon">
+  <rect width="64" height="64" rx="14" fill="#100E0C"/>
+  <g stroke="#EDE7DA" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- dendrites of the soma -->
+    <path d="M14 22 L21 28" opacity="0.7"/>
+    <path d="M13 41 L22 35" opacity="0.7"/>
+    <!-- axon fibre -->
+    <path d="M27 32 C 36 32, 38 22, 47 22"/>
+    <!-- terminal arborisation -->
+    <path d="M47 22 L53 17" opacity="0.85"/>
+    <path d="M47 22 L54 27" opacity="0.85"/>
+  </g>
+  <!-- soma -->
+  <circle cx="24" cy="32" r="6.4" fill="#EDE7DA"/>
+  <!-- synaptic terminal -->
+  <circle cx="49.5" cy="20.5" r="4.2" fill="#A9A2F2"/>
+</svg>

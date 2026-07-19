@@ -1,0 +1,137 @@
+---
+/**
+ * The Axon's signature: a slow neural field. Faint somata drift; proximate
+ * pairs form synapses; now and then an action potential travels an axon.
+ * Ported from the original React canvas to a self-contained inline module.
+ * Restraint by design — low alpha, meditative pace — and a good citizen:
+ * DPR-crisp, paused off-screen and on hidden tabs, one static frame under
+ * prefers-reduced-motion, re-inks itself on theme change.
+ */
+interface Props { class?: string }
+const { class: className } = Astro.props;
+---
+
+<canvas class:list={['axon-field', className]} aria-hidden="true"></canvas>
+
+<style>
+  .axon-field {
+    width: 100%;
+    height: 100%;
+    display: block;
+    -webkit-mask-image: radial-gradient(120% 100% at 50% 28%, #000 38%, transparent 78%);
+    mask-image: radial-gradient(120% 100% at 50% 28%, #000 38%, transparent 78%);
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var canvas = document.querySelector('canvas.axon-field');
+    if (!canvas || !canvas.getContext) return;
+    var ctx = canvas.getContext('2d');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var raf = 0, running = false, w = 0, h = 0, dpr = 1;
+    var nodes = [], pulses = [], ink = '0 0% 95%';
+
+    function readInk() {
+      var v = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim();
+      if (v) ink = v;
+    }
+    function stroke(a) { return 'hsl(' + ink + ' / ' + a + ')'; }
+
+    function resize() {
+      var r = canvas.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = r.width; h = r.height;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var count = Math.min(64, Math.max(22, Math.round((w * h) / 17000)));
+      nodes = [];
+      for (var i = 0; i < count; i++) {
+        nodes.push({
+          x: Math.random() * w, y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.12, vy: (Math.random() - 0.5) * 0.12,
+          r: Math.random() * 1.1 + 0.5,
+        });
+      }
+    }
+
+    var LINK = 132, LINK2 = LINK * LINK;
+
+    function spawnPulse() {
+      if (nodes.length < 2 || pulses.length > 2) return;
+      var a = nodes[(Math.random() * nodes.length) | 0], b = null, best = LINK2;
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        if (n === a) continue;
+        var d = (n.x - a.x) * (n.x - a.x) + (n.y - a.y) * (n.y - a.y);
+        if (d < best) { best = d; b = n; }
+      }
+      if (b) pulses.push({ a: a, b: b, t: 0, life: 90 + Math.random() * 60 });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        n.x += n.vx; n.y += n.vy;
+        if (n.x < -20) n.x = w + 20; else if (n.x > w + 20) n.x = -20;
+        if (n.y < -20) n.y = h + 20; else if (n.y > h + 20) n.y = -20;
+        for (var j = i + 1; j < nodes.length; j++) {
+          var m = nodes[j];
+          var dx = n.x - m.x, dy = n.y - m.y, d2 = dx * dx + dy * dy;
+          if (d2 < LINK2) {
+            ctx.strokeStyle = stroke((1 - d2 / LINK2) * 0.13);
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(m.x, m.y); ctx.stroke();
+          }
+        }
+        ctx.fillStyle = stroke(0.5);
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2); ctx.fill();
+      }
+      for (var p = pulses.length - 1; p >= 0; p--) {
+        var q = pulses[p]; q.t += 1;
+        var k = q.t / q.life;
+        if (k >= 1) { pulses.splice(p, 1); continue; }
+        var e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        var x = q.a.x + (q.b.x - q.a.x) * e, y = q.a.y + (q.b.y - q.a.y) * e;
+        var fade = Math.sin(k * Math.PI);
+        var g = ctx.createRadialGradient(x, y, 0, x, y, 9);
+        g.addColorStop(0, stroke(0.55 * fade)); g.addColorStop(1, stroke(0));
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill();
+      }
+      if (Math.random() < 0.022) spawnPulse();
+    }
+
+    function tick() { draw(); raf = requestAnimationFrame(tick); }
+    function start() { if (running || reduce) return; running = true; raf = requestAnimationFrame(tick); }
+    function stop() { running = false; cancelAnimationFrame(raf); }
+
+    function reflow() { readInk(); resize(); }
+
+    // Size the canvas and paint one static frame as soon as it has real
+    // dimensions — via setTimeout, not rAF, so this still happens in a
+    // background/hidden tab (where rAF is suspended). The animation loop is
+    // rAF-driven and so pauses when the tab isn't visible — intended.
+    var tries = 0;
+    function boot() {
+      reflow();
+      if ((!w || !h) && tries++ < 60) { setTimeout(boot, 50); return; }
+      if (w && h) draw();          // one composed frame, independent of rAF
+      if (!reduce) start();
+    }
+    if (document.readyState === 'complete') boot();
+    else window.addEventListener('load', boot);
+
+    window.addEventListener('resize', reflow);
+    document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
+    new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting) { if (!w || !h) reflow(); start(); } else { stop(); }
+    }, { threshold: 0 }).observe(canvas);
+    new MutationObserver(function () { readInk(); if (reduce) draw(); })
+      .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  })();
+</script>

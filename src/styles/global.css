@@ -1,0 +1,313 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   THE AXON — signature "ink" design system
+   Dark by default (the publication's voice), with a warm "paper" light mode.
+   Typography-led: Fraunces display, Newsreader for reading, Inter for UI,
+   JetBrains Mono for eyebrows. Ported to plain CSS on the static engine.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ---- Self-hosted variable fonts (stable paths → preloadable) ------------ */
+@font-face {
+  font-family: 'Fraunces'; font-style: normal; font-display: swap; font-weight: 300 700;
+  src: url('/fonts/fraunces-latin-wght-normal.woff2') format('woff2-variations');
+}
+@font-face {
+  font-family: 'Newsreader'; font-style: normal; font-display: swap; font-weight: 300 600;
+  src: url('/fonts/newsreader-latin-wght-normal.woff2') format('woff2-variations');
+}
+@font-face {
+  font-family: 'Newsreader'; font-style: italic; font-display: swap; font-weight: 300 600;
+  src: url('/fonts/newsreader-latin-wght-italic.woff2') format('woff2-variations');
+}
+@font-face {
+  font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url('/fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+}
+@font-face {
+  font-family: 'JetBrains Mono'; font-style: normal; font-display: swap; font-weight: 400 600;
+  src: url('/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations');
+}
+
+/* ---- Tokens ------------------------------------------------------------- */
+:root {
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Light — "paper": a warm, archival reading surface */
+  --background: 38 30% 97%;
+  --foreground: 28 16% 12%;
+  --card: 40 33% 99%;
+  --muted: 36 20% 91%;
+  --muted-foreground: 30 10% 38%;
+  --primary: 244 47% 46%;
+  --accent: 262 45% 50%;
+  --border: 34 16% 84%;
+  --ring: 244 47% 46%;
+
+  --synapse-blue: 222 64% 44%;
+  --hormonal-amber: 28 84% 36%;
+
+  --radius: 0.25rem;
+
+  /* Fluid modular type scale — the spine of the system */
+  --fs-eyebrow: clamp(0.625rem, 0.59rem + 0.18vw, 0.72rem);
+  --fs-meta:    clamp(0.72rem, 0.69rem + 0.15vw, 0.8rem);
+  --fs-body:    clamp(1.06rem, 1.0rem + 0.3vw, 1.2rem);
+  --fs-lead:    clamp(1.2rem, 1.04rem + 0.8vw, 1.62rem);
+  --fs-h3:      clamp(1.2rem, 1.04rem + 0.85vw, 1.7rem);
+  --fs-h2:      clamp(1.55rem, 1.22rem + 1.7vw, 2.7rem);
+  --fs-h1:      clamp(2.1rem, 1.45rem + 3.4vw, 4rem);
+  --fs-display: clamp(3rem, 1.4rem + 8vw, 8.25rem);
+
+  /* Spacing */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4rem;
+  --space-9: 6rem; --space-10: 8rem;
+
+  /* Layout */
+  --page-max: 78rem;
+  --measure: 38rem;      /* ~66 characters — the classic reading optimum */
+  --measure-wide: 44rem;
+  --gutter: clamp(1.25rem, 0.7rem + 2.6vw, 2.75rem);
+
+  color-scheme: light;
+}
+
+.dark {
+  /* Dark — "ink": a deep, warm near-black, the default voice */
+  --background: 30 9% 6%;
+  --foreground: 40 14% 90%;
+  --card: 30 8% 9%;
+  --muted: 30 7% 14%;
+  --muted-foreground: 36 9% 62%;
+  --primary: 240 64% 74%;
+  --accent: 264 56% 74%;
+  --border: 34 7% 18%;
+  --ring: 240 64% 74%;
+
+  --synapse-blue: 220 84% 72%;
+  --hormonal-amber: 30 90% 62%;
+
+  color-scheme: dark;
+}
+
+/* ---- Reset & base ------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; border-color: hsl(var(--border)); }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.7;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+img, svg, canvas, video { display: block; max-width: 100%; }
+img { height: auto; }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.011em;
+  line-height: 1.1;
+  color: hsl(var(--foreground));
+  text-wrap: balance;
+}
+p, li, blockquote { font-feature-settings: 'kern' 1, 'liga' 1, 'onum' 1, 'pnum' 1; }
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+::selection { background: hsl(var(--primary) / 0.28); color: hsl(var(--foreground)); }
+
+:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; border-radius: 2px; }
+:focus:not(:focus-visible) { outline: none; }
+
+/* Restrained scrollbars that match the ink/paper surface */
+* { scrollbar-width: thin; scrollbar-color: hsl(var(--border)) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+  border: 3px solid hsl(var(--background));
+}
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.5); }
+
+/* ---- Reusable components ------------------------------------------------ */
+
+/* Eyebrow — the ONLY all-caps in the system: tracked mono micro-label */
+.eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: var(--fs-eyebrow);
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Marquee gradient text (foreground → primary → accent) */
+.accent-gradient {
+  background: linear-gradient(102deg, hsl(var(--foreground)) 0%, hsl(var(--primary)) 58%, hsl(var(--accent)) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.rule { height: 1px; background: hsl(var(--border)); border: 0; }
+
+.container {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.container--reading { max-width: var(--measure-wide); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Skip link */
+.skip-link {
+  position: fixed; top: 0.75rem; left: 50%;
+  transform: translateX(-50%) translateY(-160%);
+  z-index: 100;
+  padding: 0.6rem 1.1rem; border-radius: 9999px;
+  background: hsl(var(--foreground)); color: hsl(var(--background));
+  font-family: var(--font-mono); font-size: 0.72rem;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  transition: transform 0.22s ease;
+}
+.skip-link:focus { transform: translateX(-50%) translateY(0); }
+
+/* Buttons */
+.button {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-mono); font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.16em; font-weight: 500;
+  padding: 0.75em 1.3em; border-radius: 9999px;
+  border: 1px solid hsl(var(--primary) / 0.5);
+  color: hsl(var(--primary)); background: hsl(var(--primary) / 0.08);
+  cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.button:hover { background: hsl(var(--primary) / 0.16); border-color: hsl(var(--primary) / 0.8); }
+
+.textlink {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-mono); font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  color: hsl(var(--muted-foreground));
+}
+.textlink:hover { color: hsl(var(--foreground)); }
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: hsl(var(--muted-foreground));
+}
+
+/* Editorial underline that draws in from the left */
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%; background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), color 0.2s ease;
+  padding-bottom: 0.05em;
+}
+.link-underline:hover, .link-underline:focus-visible { background-size: 100% 1px; }
+
+/* The axon end-mark ("fin") flanked by hairlines */
+.end-mark {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  margin: var(--space-8) 0 var(--space-4);
+  color: hsl(var(--muted-foreground) / 0.65);
+}
+.end-mark::before, .end-mark::after {
+  content: ""; height: 1px; width: 2.25rem; background: hsl(var(--border));
+}
+
+/* ---- Prose (Newsreader reading body) ----------------------------------- */
+.prose {
+  font-family: var(--font-serif);
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  color: hsl(var(--foreground) / 0.92);
+  max-width: var(--measure);
+  font-feature-settings: 'kern' 1, 'liga' 1, 'onum' 1, 'pnum' 1;
+}
+.prose > * + * { margin-top: 1.4em; }
+.prose h2 { font-family: var(--font-display); font-size: var(--fs-h3); margin-top: 2em; color: hsl(var(--foreground)); }
+.prose h3 { font-family: var(--font-display); font-size: var(--fs-lead); margin-top: 1.7em; color: hsl(var(--foreground)); }
+.prose h2 + *, .prose h3 + * { margin-top: 0.6em; }
+.prose a { color: hsl(var(--primary)); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; text-decoration-color: hsl(var(--primary) / 0.4); }
+.prose a:hover { text-decoration-color: hsl(var(--primary)); }
+.prose strong { font-weight: 600; color: hsl(var(--foreground)); }
+.prose em { font-style: italic; }
+.prose blockquote {
+  border-left: 2px solid hsl(var(--primary) / 0.6);
+  padding-left: var(--space-5); margin-left: 0;
+  font-style: italic; font-size: var(--fs-lead); color: hsl(var(--muted-foreground));
+}
+.prose ul, .prose ol { padding-left: 1.4em; }
+.prose li + li { margin-top: 0.4em; }
+.prose code {
+  font-family: var(--font-mono); font-size: 0.86em;
+  background: hsl(var(--muted)); padding: 0.12em 0.4em; border-radius: 3px;
+}
+.prose pre {
+  background: hsl(var(--muted)); border: 1px solid hsl(var(--border));
+  border-radius: var(--radius); padding: var(--space-4); overflow-x: auto; font-size: 0.9rem;
+}
+.prose pre code { background: none; padding: 0; }
+.prose hr { border: 0; border-top: 1px solid hsl(var(--border)); margin: var(--space-7) 0; }
+.prose table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 0.9rem; font-feature-settings: 'tnum' 1; }
+.prose th, .prose td { text-align: left; padding: 0.5em 0.75em; border-bottom: 1px solid hsl(var(--border)); }
+.prose th { font-weight: 600; }
+
+/* Drop cap — the opening initial of a text essay */
+.dropcap > p:first-of-type::first-letter {
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 3.4em; line-height: 0.82; float: left;
+  margin: 0.06em 0.12em 0 0; color: hsl(var(--foreground));
+}
+
+/* ---- Print: a clean offprint ------------------------------------------- */
+@media print {
+  :root, .dark { --background: 0 0% 100%; --foreground: 0 0% 8%; }
+  .site-header, .site-footer, .skip-link, .test-tube, .axon-field, .theme-toggle { display: none !important; }
+  body { background: #fff !important; color: #111 !important; }
+  .prose, .container--reading { max-width: 100% !important; }
+  a { color: #111 !important; text-decoration: underline; }
+  .prose a[href^="http"]::after { content: " (" attr(href) ")"; font-family: var(--font-mono); font-size: 0.7em; color: #555; }
+}
