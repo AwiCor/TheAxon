@@ -5,10 +5,8 @@
 
 backend:
   name: github
-  repo: YOUR_GITHUB_USERNAME/theaxon   # ← change to your repo, e.g. janlabuc/theaxon
+  repo: AwiCor/TheAxon
   branch: main
-  # URL of your OAuth relay worker (see ADMIN.md). Only needed for the live site.
-  base_url: https://YOUR-AUTH-WORKER.example.workers.dev
 
 # Lets you run the editor locally with no login: `npm run cms:local`, then open
 # http://localhost:4323/admin/. Ignored on the live domain.
