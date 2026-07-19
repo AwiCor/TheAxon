@@ -10,7 +10,7 @@ abstract: |-
 
   The article concludes that reversing this neurological harm requires a multi-tiered strategy: individual behavioral change (dopamine fasting and digital detox), institutional action (stricter phone-free school policies), and governmental regulation (age-based restrictions on habit-forming design features such as infinite scroll and autoplay). It frames the protection of adolescent neurodevelopment as a shared societal obligation and a proportional response to deliberately engineered addictive architecture.
 author: Jan J. Labuc
-date: 2026-04-13
+date: 2026-07-19
 featured: true
 draft: true
 pdf: /papers/bb5af15f9_article.pdf
