@@ -12,7 +12,7 @@ abstract: |-
 author: Jan J. Labuc
 date: 2026-04-13
 featured: true
-draft: true
+draft: false
 pdf: /papers/bb5af15f9_article.pdf
 ---
 
