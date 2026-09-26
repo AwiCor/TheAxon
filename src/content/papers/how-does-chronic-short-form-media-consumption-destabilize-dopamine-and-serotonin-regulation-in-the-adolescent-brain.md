@@ -3,7 +3,7 @@ title: How Does Chronic Short-Form Media Consumption Destabilize Dopamine and Se
 section: neurology
 abstract: This article argues that chronic short-form social media use destabilizes dopamine and serotonin regulation in the developing adolescent brain, as engagement-maximizing algorithms exploit the immature prefrontal cortex through reward patterns resembling behavioral addiction. Synthesizing recent neuroscientific and epidemiological evidence—including longitudinal fMRI, meta-analytic, and detox-intervention studies—it acknowledges unresolved questions of causal directionality while positioning social media as at minimum a powerful accelerant of adolescent mental health decline. It concludes that reversing this harm requires coordinated intervention across individual behavior, institutional policy, and governmental regulation.
 author: Jan J. Labuc
-date: 2026-04-13
+date: 2025-11-21
 featured: true
 draft: false
 pdf: /papers/bb5af15f9_article.pdf
